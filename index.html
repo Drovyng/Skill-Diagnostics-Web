@@ -17,6 +17,14 @@
             height: 32px;
             font-size: 20px;
         }
+        #top{
+            width: 100%;
+            margin: 20px 0 0 0;
+            text-align: center;
+            text-anchor: middle;
+            height: 28px;
+            font-size: 28px;
+        }
         #bg{
 
             background: #EEE;
@@ -26,11 +34,7 @@
             height: auto;
 
             border: solid #5CC 6px;
-            border-radius: 24px;
-            /*
-            border-radius: 24px 24px 0 0;
-            border-bottom: none;
-            */
+            border-radius: 24px;\
         }
         #gameCanvas{
             border-radius: 24px 24px 0 0;
@@ -72,12 +76,16 @@
         }
     </style>
 </head>
-<body>
+<body onresize="rezoom();">
     <div id="loading">Загрузка...</div>
     <script>
         let onInputRange = function (){
         }
         let onPressSubmit = function (){
+        }
+        function rezoom(){
+            let watWidth = window.innerWidth / window.devicePixelRatio;
+            document.getElementById("bg").style.zoom = Math.min(watWidth / 550, window.devicePixelRatio * 1.25);
         }
     </script>
     <script type="module">
@@ -119,8 +127,10 @@
         });
         function run() {
             document.body.innerHTML = "<div id=\"bg\" style=\"zoom: 1.25\"></div>";
-
             const bg = document.getElementById("bg")
+
+            bg.innerHTML += "<div id='top'>Диагностика навыков</div>"
+
             let ids = 0;
             let questions = []
 
@@ -252,6 +262,7 @@
             }
 
             redraw();
+            rezoom();
 
             if (isCan) {
                 onPressSubmit = () => {
