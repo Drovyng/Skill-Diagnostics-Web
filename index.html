@@ -25,6 +25,15 @@
             height: 28px;
             font-size: 28px;
         }
+        #subtop{
+            width: 100%;
+            margin: 20px 0 0 0;
+            text-align: center;
+            text-anchor: middle;
+            height: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
         #bg{
 
             background: #EEE;
@@ -34,7 +43,7 @@
             height: auto;
 
             border: solid #5CC 6px;
-            border-radius: 24px;\
+            border-radius: 24px;
         }
         #gameCanvas{
             border-radius: 24px 24px 0 0;
@@ -105,34 +114,45 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Regular expression to extract the IP address from the user agent string
-        const ipAddressRegex = /(?:\d{1,3}\.){3}\d{1,3}/;
 
-        // Extracting the IP address from the user agent string
-        const ipAddress = navigator.userAgent.match(ipAddressRegex)[0].replaceAll(".", "_");
 
+        let ipAddress = 1337;
         let isCan = true;
-        if (document.cookie && document.cookie.includes("already")){
-            isCan = false;
-        }
         let values = null;
 
-        get(ref(db, 'answers/' + ipAddress)).then((snapshot2) => {
-            if (snapshot2.exists()) {
-                values = snapshot2.val();
-                isCan = false
-                run()
+        fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(data => afterIP(data.ip));
+
+
+        function afterIP(ip){
+            ipAddress = ip.replaceAll(".", "_")
+
+            if (document.cookie && document.cookie.includes("already")){
+                isCan = false;
             }
-            else run()
-        }).catch((error) => {
-            isCan = false
-            run();
-        });
+
+            get(ref(db, 'answers/' + ipAddress)).then((snapshot2) => {
+                if (snapshot2.exists()) {
+                    values = snapshot2.val();
+                    isCan = false
+                    run()
+                }
+                else run()
+            }).catch((error) => {
+                isCan = false
+                run();
+            });
+        }
+
         function run() {
             document.body.innerHTML = "<div id=\"bg\" style=\"zoom: 1.25\"></div>";
             const bg = document.getElementById("bg")
 
             bg.innerHTML += "<div id='top'>Диагностика навыков</div>"
+            if (!isCan){
+                bg.innerHTML += "<div id='subtop'>Вы уже отправили ответ!</div>"
+            }
 
             let ids = 0;
             let questions = []
@@ -176,7 +196,7 @@
             createQuestion("Профессиональные компетенции|по специальности")
 
             bg.innerHTML += "<canvas id='gameCanvas'></canvas>"
-            if (isCan) bg.innerHTML += "<button onclick='onPressSubmit()'>Отправить</button>"
+            bg.innerHTML += "<button " + (isCan ? "onclick='onPressSubmit()'" : "disabled") + ">Отправить</button>"
 
             const canvas = document.getElementById('gameCanvas');
             const ratio = window.devicePixelRatio * 3;
