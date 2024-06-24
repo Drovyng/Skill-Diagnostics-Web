@@ -83,19 +83,51 @@
             text-align: center;
             text-anchor: middle;
         }
+        select{
+            width: 80%;
+            margin: 0 10%;
+        }
+        select > *{
+            text-align: center;
+            text-anchor: middle;
+            padding: 0 0 0 0;
+        }
+        option{
+            padding: 0 0 0 0;
+        }
+        #subbottom{
+            width: 100%;
+            margin: 20px 0 10px 0;
+            text-align: center;
+            text-anchor: middle;
+            height: 18px;
+            font-size: 18px;
+            font-weight: 600;
+        }
     </style>
-</head>
-<body onresize="rezoom();">
-    <div id="loading">Загрузка...</div>
     <script>
         let onInputRange = function (){
         }
         let onPressSubmit = function (){
         }
-        function rezoom(){
-            let watWidth = window.innerWidth / window.devicePixelRatio;
-            document.getElementById("bg").style.zoom = Math.min(watWidth / 550, window.devicePixelRatio * 1.25);
+        function rezoom() {
+            let bg = document.getElementById("bg");
+            let oWidth = window.outerWidth / window.devicePixelRatio;
+            if (bg){
+                let zoom = 1;
+                let width = document.body.getBoundingClientRect().width;
+
+                if (width < 550){
+                    zoom = width / 550;
+                }
+
+                if (width > oWidth){
+                    zoom *= width / oWidth
+                }
+                bg.style.zoom = Math.min(zoom, 2.5);
+            }
         }
+        window.onresize = rezoom;
     </script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -110,6 +142,97 @@
             appId: "1:84611568844:web:79aaf61165d07767109e69",
             measurementId: "G-BB56BKNBTN"
         };
+        const regions = [
+
+            "--Центральный федеральный округ\n",
+            "Белгородская область\n",
+            "Брянская область\n",
+            "Владимирская область\n",
+            "Воронежская область\n",
+            "Ивановская область\n",
+            "Калужская область\n",
+            "Костромская область\n",
+            "Курская область\n",
+            "Липецкая область\n",
+            "Московская область\n",
+            "Орловская область\n",
+            "Рязанская область\n",
+            "Смоленская область\n",
+            "Тамбовская область\n",
+            "Тверская область\n",
+            "Тульская область\n",
+            "Ярославская область\n",
+            "г. Москва\n",
+
+            "--Северо-Западный федеральный округ\n",
+            "Республика Карелия\n",
+            "Республика Коми\n",
+            "Архангельская область\n",
+            "Вологодская область\n",
+            "Калининградская область\n",
+            "Ленинградская область\n",
+            "Мурманская область\n",
+            "Новгородская область\n",
+            "Псковская область\n",
+            "г. Cанкт-Петербург\n",
+
+            "--Южный федеральный округ \n",
+            "Республика Адыгея\n",
+            "Краснодарский край\n",
+            "Астраханская область\n",
+            "Волгоградская область\n",
+            "Ростовская область\n",
+
+            "Северо-Кавказский  федеральный округ \n",
+            "Республика Дагестан\n",
+            "Кабардино-Балкарская Республика\n",
+            "Карачаево-Черкесская Республика\n",
+            "Республика Северная Осетия - Алания\n",
+            "Чеченская Республика\n",
+            "Ставропольский край\n",
+
+            "--Приволжский федеральный округ \n",
+            "Республика Башкортостан\n",
+            "Республика Марий Эл\n",
+            "Республика Мордовия\n",
+            "Республика Татарстан\n",
+            "Удмуртская Республика\n",
+            "Чувашская Республика\n",
+            "Пермский край\n",
+            "Кировская область\n",
+            "Нижегородская область\n",
+            "Оренбургская область\n",
+            "Пензенская область\n",
+            "Самарская область\n",
+            "Саратовская область\n",
+            "Ульяновская область\n",
+
+            "--Уральский федеральный округ \n",
+            "Курганская область\n",
+            "Свердловская область\n",
+            "Тюменская область\n",
+            "Челябинская область\n",
+            "Ханты-Мансийский автономный округ\n",
+
+            "--Сибирский  федеральный округ\n",
+            "Республика Бурятия\n",
+            "Республика Хакасия\n",
+            "Алтайский край\n",
+            "Забайкальский край\n",
+            "Красноярский край\n",
+            "Иркутская область\n",
+            "Кемеровская область\n",
+            "Новосибирская область\n",
+            "Омская область\n",
+            "Томская область\n",
+
+            "--Дальневосточный федеральный округ \n",
+            "Приморский край\n",
+            "Хабаровский край\n",
+            "Амурская область\n",
+            "Сахалинская область\n",
+            "Еврейская автономная область\n"
+        ]
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
@@ -156,6 +279,7 @@
 
             let ids = 0;
             let questions = []
+            let selectedRegion = isCan || values === null ? 0 : values[12];
 
             function createQuestion(name) {
                 questions.push(name)
@@ -196,6 +320,21 @@
             createQuestion("Профессиональные компетенции|по специальности")
 
             bg.innerHTML += "<canvas id='gameCanvas'></canvas>"
+            let regionText = "<div id='subbottom'>Укажите ваш регион</div>" +
+                "<select " + (isCan ? "" : "disabled") + " id='region-select'>\n" +
+                "<optgroup label='" + regions[0].replaceAll("--", "") + "'>\n"
+            let valMinus = 0;
+            for (let i = 1; i < regions.length; i++) {
+                let reg = regions[i];
+                if (reg.includes("--")){
+                    regionText += "</optgroup>\n<optgroup label='" + reg.replaceAll("--", "") + "'>\n";
+                    valMinus += 1;
+                }
+                else{
+                    regionText += "<option " + (selectedRegion === i - valMinus ? "selected" : "") + " value='" + (i - valMinus) + "'>" + reg + "</option>\n";
+                }
+            }
+            bg.innerHTML += regionText + "</optgroup>\n</select>"
             bg.innerHTML += "<button " + (isCan ? "onclick='onPressSubmit()'" : "disabled") + ">Отправить</button>"
 
             const canvas = document.getElementById('gameCanvas');
@@ -293,10 +432,11 @@
                     for (let i = 0; i < ids; i++) {
                         answers.push(parseInt(document.getElementById("q" + i).value))
                     }
+                    answers.push(document.getElementById("region-select").value)
                     set(ref(db, 'answers/' + ipAddress), answers)
 
                     const date = new Date();
-                    date.setTime(date.getTime() +  (720 * 24 * 60 * 60 * 1000));
+                    date.setTime(date.getTime() +  (48 * 60 * 60 * 1000));
                     let expires = "expires=" + date.toUTCString();
                     document.cookie = `already=true; ${expires}; path=/`
 
@@ -306,5 +446,8 @@
             }
         }
     </script>
+</head>
+<body>
+    <div id="loading">Загрузка...</div>
 </body>
 </html>
